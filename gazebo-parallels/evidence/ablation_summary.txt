@@ -1,0 +1,58 @@
+CONTROLLED ABLATION: EXISTING VM, 29 OCTOBER 2026
+53 trials; deterministic shuffled order; 2 s observer warmup + ~6 s samples.
+Not a clean-VM installation. Rates are sensor publication rates, not GUI FPS.
+Full commands, library paths and first scans: results/*/result.json.
+Invalid counts aggregate rays across all observed scans, not distinct rays.
+
+LIDAR: backend / variant / world / runs / error_max_m / invalids / Hz range
+mesa24     center       single       n=1 error=1.733402 invalid=0 Hz=9.999-9.999
+mesa24     center_uv    single       n=3 error=0.031413 invalid=0 Hz=9.998-10.000
+mesa24     pad2         single       n=1 error=0.031413 invalid=0 Hz=10.000-10.000
+mesa24     pad3         single       n=1 error=0.031412 invalid=0 Hz=9.998-9.998
+mesa24     stock        full360      n=1 error=4.512344 invalid=0 Hz=9.991-9.991
+mesa24     stock        single       n=3 error=2.683402 invalid=0 Hz=9.992-10.001
+mesa24     upstream     full360      n=1 error=3.562344 invalid=0 Hz=9.992-9.992
+mesa24     upstream     single       n=1 error=1.733402 invalid=0 Hz=9.988-9.988
+mesa24     upstream     three_rows   n=1 error=0.029679 invalid=0 Hz=10.004-10.004
+mesa24     upstream_uv  single       n=1 error=0.031413 invalid=0 Hz=9.964-9.964
+mesa24     uv           single       n=1 error=2.683402 invalid=0 Hz=9.996-9.996
+mesa25     center       single       n=1 error=6.745104 invalid=6960 Hz=10.000-10.000
+mesa25     center_uv    single       n=3 error=6.745104 invalid=20880 Hz=9.985-9.993
+mesa25     pad2         single       n=1 error=6.745104 invalid=6960 Hz=9.997-9.997
+mesa25     pad3         single       n=1 error=6.760049 invalid=6960 Hz=10.001-10.001
+mesa25     stock        full360      n=1 error=4.512344 invalid=0 Hz=9.953-9.953
+mesa25     stock        single       n=3 error=2.683402 invalid=0 Hz=9.996-10.000
+mesa25     upstream     full360      n=1 error=0.000000 invalid=7740 Hz=9.996-9.996
+mesa25     upstream     single       n=1 error=6.745104 invalid=6960 Hz=10.000-10.000
+mesa25     upstream     three_rows   n=1 error=6.766100 invalid=20880 Hz=9.936-9.936
+mesa25     upstream_uv  single       n=1 error=6.745104 invalid=6960 Hz=10.000-10.000
+mesa25     uv           single       n=1 error=2.683402 invalid=0 Hz=9.991-9.991
+software25 center       single       n=1 error=0.031413 invalid=0 Hz=9.998-9.998
+software25 center_uv    single       n=1 error=0.031413 invalid=0 Hz=9.997-9.997
+software25 pad3         single       n=1 error=0.031413 invalid=0 Hz=10.001-10.001
+software25 stock        single       n=1 error=0.031413 invalid=0 Hz=10.000-10.000
+software25 uv           single       n=1 error=0.031413 invalid=0 Hz=9.997-9.997
+
+CAMERA: backend / shadow setting / sensor / runs / valid_nonblack / total / Hz range
+mesa24     camera_shadows_off   noise n=3 nonblack=545/545 Hz=30.245-30.286
+mesa24     camera_shadows_off   plain n=3 nonblack=545/545 Hz=30.248-30.292
+mesa24     camera_shadows_on    noise n=3 nonblack=545/545 Hz=30.153-30.309
+mesa24     camera_shadows_on    plain n=3 nonblack=544/544 Hz=30.155-30.305
+mesa25     camera_shadows_off   noise n=3 nonblack=0/546 Hz=30.271-30.297
+mesa25     camera_shadows_off   plain n=3 nonblack=546/546 Hz=30.272-30.298
+mesa25     camera_shadows_on    noise n=3 nonblack=0/545 Hz=30.282-30.310
+mesa25     camera_shadows_on    plain n=3 nonblack=546/546 Hz=30.285-30.311
+software25 camera_shadows_off   noise n=3 nonblack=545/545 Hz=30.205-30.253
+software25 camera_shadows_off   plain n=3 nonblack=545/545 Hz=30.196-30.258
+software25 camera_shadows_on    noise n=3 nonblack=546/546 Hz=30.300-30.305
+software25 camera_shadows_on    plain n=3 nonblack=546/546 Hz=30.301-30.303
+
+INTERPRETATION
+Mesa24 stock narrow LiDAR has ~2.683 m maximum wall error; centering alone ~1.733 m.
+Center+UV, pad2, pad3 and upstream+UV give ~0.031413 m, without invalid wall rays.
+Therefore three physical rows are not necessary in this measured narrow fixture.
+Mesa25/VirGL retains severe LiDAR failures across tested patched variants.
+Mesa25 noisy camera is black with BOTH shadow settings; turning shadows off is insufficient.
+Mesa24/VirGL and software25 produce nonblack plain/noisy images with both settings.
+Software25 tolerates stock narrow LiDAR; this contradicts a blanket OGRE1 single-row failure.
+No conclusion about displayed GUI flicker is obtained from these headless trials.

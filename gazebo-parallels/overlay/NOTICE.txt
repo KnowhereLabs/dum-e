@@ -1,0 +1,11 @@
+This dossier includes modified source and patches based on Gazebo projects.
+Gazebo rendering and vendor source: Open Source Robotics Foundation and the
+contributors named in the original files, under Apache License 2.0.
+The vendor snapshot is gz_rendering_vendor 0.0.7, commit
+d6ea9d95c88e7b2ba6cb7a8601d1edc9d459bc86, with local CMake changes.
+LiDAR pixel-centering work: Vova Shcherbyna, gz-rendering PR #1370.
+LiDAR camera-orientation work: Abdullahi Ali Weheliye, PR #1378.
+The original upstream patches, author fields and sign-offs are retained in
+upstream/. Local numerical and packaging changes are described in the guide.
+The upstream projects do not endorse this experimental distribution.
+No third-party copyright, license or contribution attribution was removed.

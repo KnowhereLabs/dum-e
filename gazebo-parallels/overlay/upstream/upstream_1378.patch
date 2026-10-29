@@ -1,0 +1,251 @@
+From 0c493a102ec790dd8c50c7726f441ec7ca24e9e9 Mon Sep 17 00:00:00 2001
+From: Abdullahi Ali Weheliye <a.i.weheliye@gmail.com>
+Date: Sat, 10 Oct 2026 17:54:10 -0400
+Subject: [PATCH 1/4] Fix receding rays when using gpu lidar with ogre1
+
+Signed-off-by: Abdullahi Ali Weheliye <a.i.weheliye@gmail.com>
+---
+ ogre/src/OgreGpuRays.cc      | 16 +++++----
+ test/integration/gpu_rays.cc | 69 ++++++++++++++++++++++++++++++++++++
+ 2 files changed, 78 insertions(+), 7 deletions(-)
+
+diff --git a/ogre/src/OgreGpuRays.cc b/ogre/src/OgreGpuRays.cc
+index cd30ae797..121c2625f 100644
+--- a/ogre/src/OgreGpuRays.cc
++++ b/ogre/src/OgreGpuRays.cc
+@@ -89,7 +89,7 @@ class gz::rendering::OgreGpuRaysPrivate
+   public: unsigned int textureCount = 0u;
+ 
+   /// \brief A list of camera angles for first pass rendering.
+-  public: double cameraYaws[4];
++  public: double cameraYaws[3];
+ 
+   /// \brief Image width of first pass.
+   public: unsigned int w1st = 0u;
+@@ -430,16 +430,13 @@ void OgreGpuRays::CreateGpuRaysTextures()
+   if (this->dataPtr->textureCount == 2)
+   {
+     this->dataPtr->cameraYaws[0] = -this->HFOV().Radian() / 2.0;
+-    this->dataPtr->cameraYaws[1] = +this->HFOV().Radian();
+-    this->dataPtr->cameraYaws[2] = 0;
+-    this->dataPtr->cameraYaws[3] = -this->HFOV().Radian() / 2.0;
++    this->dataPtr->cameraYaws[1] = +this->HFOV().Radian() / 2.0;
+   }
+   else
+   {
+     this->dataPtr->cameraYaws[0] = -this->HFOV().Radian();
+-    this->dataPtr->cameraYaws[1] = +this->HFOV().Radian();
++    this->dataPtr->cameraYaws[1] = 0;
+     this->dataPtr->cameraYaws[2] = +this->HFOV().Radian();
+-    this->dataPtr->cameraYaws[3] = -this->HFOV().Radian();
+   }
+ 
+   // Configure first pass textures that are not yet configured properly
+@@ -629,12 +626,17 @@ void OgreGpuRays::Render()
+   sceneMgr->_suppressRenderStateChanges(true);
+   sceneMgr->addRenderObjectListener(this);
+ 
++  Ogre::Quaternion initialOrientation;
++  if (this->dataPtr->textureCount > 1)
++    initialOrientation = this->Node()->getOrientation();
++
+   for (unsigned int i = 0; i < this->dataPtr->textureCount; ++i)
+   {
+     if (this->dataPtr->textureCount > 1)
+     {
+       // Cannot call Camera::RotateYaw because it rotates in world frame,
+       // but we need rotation in camera local frame
++      this->Node()->setOrientation(initialOrientation);
+       this->Node()->roll(Ogre::Radian(this->dataPtr->cameraYaws[i]));
+     }
+ 
+@@ -648,7 +650,7 @@ void OgreGpuRays::Render()
+   }
+ 
+   if (this->dataPtr->textureCount > 1)
+-      this->Node()->roll(Ogre::Radian(this->dataPtr->cameraYaws[3]));
++      this->Node()->setOrientation(initialOrientation);
+ 
+   sceneMgr->removeRenderObjectListener(this);
+ 
+diff --git a/test/integration/gpu_rays.cc b/test/integration/gpu_rays.cc
+index 0ee6339a0..8ad80daa6 100644
+--- a/test/integration/gpu_rays.cc
++++ b/test/integration/gpu_rays.cc
+@@ -1169,3 +1169,72 @@ TEST_F(GpuRaysTest, GZ_UTILS_TEST_DISABLED_ON_WIN32(Heightmap))
+   // Clean up
+   engine->DestroyScene(scene);
+ }
++
++/////////////////////////////////////////////////
++/// \brief Test that lidar scans do not recede inwards
++TEST_F(GpuRaysTest, GZ_UTILS_TEST_DISABLED_ON_WIN32(LidarRaysDoNotRecede))
++{
++  CHECK_SUPPORTED_ENGINE("ogre");
++  #ifdef __APPLE__
++    GTEST_SKIP() << "Unsupported on apple, see issue #35.";
++  #endif
++
++  const double hMinAngle = -2.35;
++  const double hMaxAngle = 2.35;
++  const double minRange = 0.08;
++  const double maxRange = 50.0;
++  const int hRayCount = 10;
++  const int vRayCount = 1;
++
++  ScenePtr scene = engine->CreateScene("scene");
++  ASSERT_NE(nullptr, scene);
++
++  VisualPtr root = scene->RootVisual();
++
++  GpuRaysPtr gpuRays = scene->CreateGpuRays("gpu_rays");
++  gpuRays->SetWorldPosition(math::Vector3d(0, 0, 0.13));
++  gpuRays->SetWorldRotation(math::Quaterniond::Identity);
++  gpuRays->SetNearClipPlane(minRange);
++  gpuRays->SetFarClipPlane(maxRange);
++  gpuRays->SetAngleMin(hMinAngle);
++  gpuRays->SetAngleMax(hMaxAngle);
++  gpuRays->SetRayCount(hRayCount);
++  gpuRays->SetVerticalRayCount(vRayCount);
++  root->AddChild(gpuRays);
++
++  VisualPtr floor = scene->CreateVisual("floor");
++  floor->AddGeometry(scene->CreatePlane());
++  floor->SetLocalScale(1000, 1000, 1);
++  floor->SetWorldPosition(0, 0, 0);
++  root->AddChild(floor);
++
++  unsigned int channels = gpuRays->Channels();
++  float *scan = new float[hRayCount * vRayCount * channels];
++  common::ConnectionPtr c =
++    gpuRays->ConnectNewGpuRaysFrame(
++        std::bind(&::OnNewGpuRaysFrame, scan,
++          std::placeholders::_1, std::placeholders::_2, std::placeholders::_3,
++          std::placeholders::_4, std::placeholders::_5));
++
++  // Running 8000 frames as it usually took 4500+ frames for original
++  // regression to manifest.
++  for (unsigned int i = 0u; i < 8000u; ++i)
++  {
++    gpuRays->Update();
++    scene->SetTime(scene->Time() + std::chrono::milliseconds(16));
++
++    // None of the scans should report hitting anything
++    for (unsigned int j = 0; j < hRayCount * channels; j += channels)
++    {
++      EXPECT_FLOAT_EQ(scan[j], math::INF_F);
++    }
++  }
++
++  c.reset();
++
++  delete [] scan;
++  scan = nullptr;
++
++  // Clean up
++  engine->DestroyScene(scene);
++}
+
+From debd8858a6ecf3c8aec30131cd8cd13f99f0af3c Mon Sep 17 00:00:00 2001
+From: Abdullahi Ali Weheliye <a.i.weheliye@gmail.com>
+Date: Sat, 10 Oct 2026 17:56:25 -0400
+Subject: [PATCH 2/4] Use correct path for mesh used in test, 'skeleton'
+ directory doesn't exist
+
+Signed-off-by: Abdullahi Ali Weheliye <a.i.weheliye@gmail.com>
+---
+ test/common_test/Scene_TEST.cc | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/test/common_test/Scene_TEST.cc b/test/common_test/Scene_TEST.cc
+index f82ebc9fb..2c86f3070 100644
+--- a/test/common_test/Scene_TEST.cc
++++ b/test/common_test/Scene_TEST.cc
+@@ -29,7 +29,7 @@ class SceneTest : public CommonRenderingTest
+ {
+   public: const std::string TEST_MEDIA_PATH =
+         common::joinPaths(std::string(PROJECT_SOURCE_PATH),
+-        "test", "media", "skeleton");
++        "test", "media");
+ };
+ 
+ /////////////////////////////////////////////////
+@@ -411,7 +411,7 @@ TEST_F(SceneTest, DestroyNodes)
+   auto gizmoVisual = scene->CreateGizmoVisual("gizmo_visual");
+   auto planeVisual = scene->CreatePlane();
+   auto meshVisual = scene->CreateMesh(
+-    common::joinPaths(TEST_MEDIA_PATH, "walk.dae"));
++    common::joinPaths(TEST_MEDIA_PATH, "meshes", "walk.dae"));
+ 
+   common::MeshPtr mesh(new common::Mesh());
+   meshVisual = scene->CreateMesh(mesh.get());
+
+From f0b128c446a6a3137550502c30851bec6c370eb5 Mon Sep 17 00:00:00 2001
+From: Abdullahi Ali Weheliye <a.i.weheliye@gmail.com>
+Date: Mon, 12 Oct 2026 20:07:07 -0400
+Subject: [PATCH 3/4] fix whitespacing
+
+Signed-off-by: Abdullahi Ali Weheliye <a.i.weheliye@gmail.com>
+---
+ ogre/src/OgreGpuRays.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/ogre/src/OgreGpuRays.cc b/ogre/src/OgreGpuRays.cc
+index 121c2625f..851e0a9ff 100644
+--- a/ogre/src/OgreGpuRays.cc
++++ b/ogre/src/OgreGpuRays.cc
+@@ -650,7 +650,7 @@ void OgreGpuRays::Render()
+   }
+ 
+   if (this->dataPtr->textureCount > 1)
+-      this->Node()->setOrientation(initialOrientation);
++    this->Node()->setOrientation(initialOrientation);
+ 
+   sceneMgr->removeRenderObjectListener(this);
+ 
+
+From 8850e69246388fad832a10b0ede04304b9f2a539 Mon Sep 17 00:00:00 2001
+From: Abdullahi Ali Weheliye <a.i.weheliye@gmail.com>
+Date: Mon, 12 Oct 2026 20:11:47 -0400
+Subject: [PATCH 4/4] Address feedback - reduce test time
+
+Signed-off-by: Abdullahi Ali Weheliye <a.i.weheliye@gmail.com>
+---
+ test/integration/gpu_rays.cc | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/test/integration/gpu_rays.cc b/test/integration/gpu_rays.cc
+index 8ad80daa6..9298e6673 100644
+--- a/test/integration/gpu_rays.cc
++++ b/test/integration/gpu_rays.cc
+@@ -1182,7 +1182,7 @@ TEST_F(GpuRaysTest, GZ_UTILS_TEST_DISABLED_ON_WIN32(LidarRaysDoNotRecede))
+   const double hMinAngle = -2.35;
+   const double hMaxAngle = 2.35;
+   const double minRange = 0.08;
+-  const double maxRange = 50.0;
++  const double maxRange = 100.0;
+   const int hRayCount = 10;
+   const int vRayCount = 1;
+ 
+@@ -1192,7 +1192,7 @@ TEST_F(GpuRaysTest, GZ_UTILS_TEST_DISABLED_ON_WIN32(LidarRaysDoNotRecede))
+   VisualPtr root = scene->RootVisual();
+ 
+   GpuRaysPtr gpuRays = scene->CreateGpuRays("gpu_rays");
+-  gpuRays->SetWorldPosition(math::Vector3d(0, 0, 0.13));
++  gpuRays->SetWorldPosition(math::Vector3d(0, 0, 0.01));
+   gpuRays->SetWorldRotation(math::Quaterniond::Identity);
+   gpuRays->SetNearClipPlane(minRange);
+   gpuRays->SetFarClipPlane(maxRange);
+@@ -1216,9 +1216,9 @@ TEST_F(GpuRaysTest, GZ_UTILS_TEST_DISABLED_ON_WIN32(LidarRaysDoNotRecede))
+           std::placeholders::_1, std::placeholders::_2, std::placeholders::_3,
+           std::placeholders::_4, std::placeholders::_5));
+ 
+-  // Running 8000 frames as it usually took 4500+ frames for original
+-  // regression to manifest.
+-  for (unsigned int i = 0u; i < 8000u; ++i)
++  // The original regression showed up after ~170 frames, so 500 frames leave a
++  // 3x margin.
++  for (unsigned int i = 0u; i < 500u; ++i)
+   {
+     gpuRays->Update();
+     scene->SetTime(scene->Time() + std::chrono::milliseconds(16));

@@ -1,0 +1,39 @@
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Changelog for package gz_rendering_vendor
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+0.0.7 (2025-11-18)
+------------------
+* Bump version to 8.2.3 (`#18 <https://github.com/gazebo-release/gz_rendering_vendor/issues/18>`_)
+* Contributors: Ian Chen
+
+0.0.6 (2025-02-10)
+------------------
+* Bump version to 8.2.2 (`#6 <https://github.com/gazebo-release/gz_rendering_vendor/issues/6>`_)
+* Contributors: Addisu Z. Taddese
+
+0.0.5 (2024-11-08)
+------------------
+* Bump version to 8.2.1 (`#4 <https://github.com/gazebo-release/gz_rendering_vendor/issues/4>`_)
+* Contributors: Ian Chen
+
+0.0.4 (2024-07-15)
+------------------
+* Update vendored package version to 8.2.0
+* Contributors: Addisu Z. Taddese
+
+0.0.3 (2024-04-25)
+------------------
+* Use an alias target for root library
+* Contributors: Addisu Z. Taddese
+
+0.0.2 (2024-04-10)
+------------------
+* Add support for the `<pkg>::<pkg>` and `<pkg>::all` targets, fix sourcing of dsv files
+* Update vendored version
+* Require calling find_package on the underlying package
+* Fix linter (`#1 <https://github.com/gazebo-release/gz_rendering_vendor/issues/1>`_)
+* Add patches to fix finding Ogre2
+* Fix url
+* Initial import
+* Contributors: Addisu Z. Taddese

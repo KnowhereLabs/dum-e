@@ -1,0 +1,50 @@
+The actual gz_rendering_vendor 0.0.7 overlay was built successfully on the
+existing ARM64 VM with colcon in 2 min 30 s. Both rendering core and OGRE
+plugins were built. Warnings include unavailable optional OptiX/CUDA and
+upstream compiler warnings; they are retained in overlay-build-stderr.log.
+BUILD_TESTING was off: the full upstream test suite was not run.
+
+The existing VM lacked ament_cmake_vendor_package. Its Ubuntu/ROS .deb was
+downloaded and extracted under /tmp/gazebo-review/vendor-tools, then that
+prefix was provided to CMake. It was not installed system-wide. The guide's
+fresh-VM path instead declares this as a package-manager build prerequisite.
+Other SDK/build dependencies were already present on the existing VM.
+
+Activation returned the workspace prefix through ros2 pkg prefix. More
+importantly, /proc maps confirmed BOTH libgz-rendering8.so.8.2.3 and the OGRE
+plugin came from the workspace install, with private Mesa 24's virtio_gpu_dri
+and GLX library. No defaults preload was used. This checks the real overlay,
+not only a plugin compiled against the old core.
+
+Five short functional smoke tests then passed with private Mesa24/VirGL:
+121-ray narrow LiDAR: 60 scans, 10.000 Hz, zero invalid wall returns,
+maximum error 0.03141284 m.
+361-ray full-circle LiDAR: 60 scans, 9.995 Hz, zero invalid wall returns,
+maximum error 0.00146914 m in the front-wall comparison sector.
+121 x 3-row LiDAR: 60 scans, 9.998 Hz, zero invalid wall returns,
+maximum error 0.02967916 m.
+Translated/rotated narrow LiDAR: sensor at (-2,1,0.5), yaw 1.2 radians,
+wall transformed consistently; 60 scans, 9.994 Hz, zero invalid wall returns,
+maximum error 0.03141308 m. This checks sensor geometry, not GUI entity pose.
+Plain/noise cameras with shadows off: 182/182 nonblack frames each,
+30.302 / 30.301 received images per wall-clock second.
+
+Each smoke test used the same two-second observer warmup and approximately
+six seconds of measured samples. These are individual functional runs,
+not independent repeated estimates of long-duration throughput or GUI FPS.
+Raw records, mapped library paths, frames and the transformed SDF are in
+ overlay-validation/. Exact commands include the temporary review paths
+and preserved original gz.vendor used only to bypass the old profile.
+
+After the tests, no test server or GUI was left running. The user-authorized
+TurtleBot launch was stopped for isolation. No permanent profile, system
+configuration or installed robot model was changed during this review.
+dpkg -V ros-jazzy-turtlebot3-gazebo reported no differences. The preserved
+original gz and gzserver SHA256 values matched the earlier recorded values.
+
+The standalone Mesa extraction/environment helpers were also executed on
+the existing VM, reusing the seven exact cached Ubuntu .deb files. glxinfo
+reported Mesa 24.0.5/VirGL through the new extracted path, and its VirGL
+driver SHA256 matched the earlier private control. The package checksums
+are retained in MESA24_PACKAGE_SHA256SUMS. This verifies extraction and
+per-command selection, not a fresh-VM network download.

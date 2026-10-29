@@ -1,0 +1,21 @@
+PROPOSAL - NOT SUBMITTED AS A PR
+
+The local guard in patches/002-single-row-uv-guard.patch directly selects
+v=0.5 for VerticalRangeCount()==1 in OgreGpuRays first-pass UV mapping.
+The original expression can evaluate 0/0 for zero vertical FOV. This is
+separate from PR #1370's second-pass pixel placement and PR #1378's multi-
+camera orientation restore. Both upstream contributions retain their credits.
+
+The existing-VM ablation isolates center, uv and their combination. On the
+Mesa24/VirGL narrow fixture neither alone produces the same correct wall
+geometry as the combination. llvmpipe tolerates the stock code in this case.
+Do not claim that all OGRE1/driver combinations fail single-row targets.
+
+Before making a PR, add an upstream regression test with one vertical sample
+and zero vertical FOV, assert finite UV inputs or correct ranges, and show it
+fails without the guard under a relevant renderer. Check intended semantics
+for VerticalRayCount vs VerticalRangeCount, non-unit resolution, one output
+row with nonzero FOV, and multiple rows with zero FOV. The supplied transport
+fixture is useful evidence but not a substitute for the project test suite.
+
+No blanket shadow suppression or LiDAR padding belongs in this proposed fix.

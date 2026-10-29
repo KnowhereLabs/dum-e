@@ -1,0 +1,13 @@
+--- a/ogre/src/OgreGpuRays.cc
++++ b/ogre/src/OgreGpuRays.cc
+@@ -909,7 +909,9 @@
+       // adjust uv coordinates of depth texture to match projection of current
+       // gpu ray the depth image plane.
+       double u = 0.5 - tan(delta) / (2.0 * tan(theta));
+-      double v = 0.5 - (tan(gamma) * cos(theta)) /
++      double v = 0.5;
++      if (this->VerticalRangeCount() > 1u)
++        v -= (tan(gamma) * cos(theta)) /
+           (2.0 * tan(phiCamera) * cos(delta));
+ 
+       submesh->AddTexCoord(u, v);

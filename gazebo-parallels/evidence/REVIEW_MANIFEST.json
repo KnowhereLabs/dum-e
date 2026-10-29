@@ -1,0 +1,22 @@
+{
+  "date": "2026-10-29",
+  "fresh_vm_tested": false,
+  "existing_vm_matrix_trials": 53,
+  "overlay_functional_trials": 5,
+  "full_upstream_suite_run": false,
+  "vendor_version": "0.0.7",
+  "vendor_commit": "d6ea9d95c88e7b2ba6cb7a8601d1edc9d459bc86",
+  "rendering_version": "8.2.3",
+  "rendering_source_sha256": "5bfe18d164414e098b2ba6ef81bf9391f7ff8f2c39b8a4fa9f8543f778e921c8",
+  "numerical_patch_sha256": {
+    "002-single-row-uv-guard.patch": "f8032a2a02a8b0dc6fbc8e3d450d1fdc1a01eaaceff7bf0de7509d6531e88996",
+    "001-upstream-centering-and-orientation.patch": "4a57fd889b21e22307b52f39ada219df0cfa12c326f21975a27914d96b836f32"
+  },
+  "production_profile_changed": false,
+  "system_packages_installed": false,
+  "new_upstream_reports_submitted": false,
+  "gui_flicker_ablation_completed": false,
+  "bench_portability_changes": "Paths and environment selection only; original VM runs preserved under evidence/results.",
+  "public_mesa_helper_tested": "Executed successfully using exact cached Ubuntu packages on the existing VM; private extraction and glxinfo/VirGL verified. Fresh network download on a new VM remains untested.",
+  "compiled_OgreGpuRays_source_sha256": "ca0336d30ed8de380fddf1a256ade94fb6a3b6a4e2b165784714f295d73c2e55"
+}

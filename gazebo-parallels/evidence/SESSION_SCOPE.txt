@@ -1,0 +1,17 @@
+Review session: 29 October 2026. Existing Ubuntu ARM64 VM.
+User authorized temporary stop of the active TurtleBot launch for isolated
+measurements. Its server/GUI children were explicitly stopped after the parent
+exited. All new test processes were stopped after their cases.
+
+No apt install, dpkg installation, system configuration update, model edit,
+profile migration or upstream issue submission was performed in this review.
+Builds and scripts ran in /tmp/gazebo-review on the VM. Existing private Mesa
+was read as a control; the earlier permanent runtime remains installed.
+A missing build-helper package was downloaded/extracted, not installed.
+The final public archive contains a standalone opt-in workflow for a future
+clean VM. That clean installation is not claimed to have happened.
+
+Original delegated entry checksums, unchanged from earlier diagnosis:
+gz.vendor: 81c41b1d1b7789efd7dfe623481ddffc684fc9a9b78c387c40e6512cb8842524
+gzserver.vendor: 64d9ae11b7467694cfafca9b81deb37a56808c46bcc512adf6c3123f143074ba
+TurtleBot package integrity: dpkg -V ros-jazzy-turtlebot3-gazebo returned no differences.

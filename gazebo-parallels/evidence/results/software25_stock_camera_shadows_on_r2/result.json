@@ -1,0 +1,55 @@
+{
+  "backend": "software25",
+  "variant": "stock",
+  "world": "camera_shadows_on",
+  "mode": "camera",
+  "repeat": 2,
+  "engine_sha256": "48f3dbc57a7cde64659e6e051a6bc20a3f836072ef5f9f0a1086f50d04c57a1e",
+  "sdf_sha256": "c45f8cc24b6b651e83041de0d825427dc5a4aaf7481b5f009f472f3331635b0d",
+  "command": [
+    "ruby",
+    "/opt/ros/jazzy/opt/gz_tools_vendor/bin/gz.vendor",
+    "sim",
+    "-r",
+    "-s",
+    "/tmp/gazebo-review/worlds/camera_shadows_on.sdf",
+    "--render-engine",
+    "/tmp/gazebo-review/variants/stock/libgz-rendering-ogre.so"
+  ],
+  "observer_warmup_s": 2,
+  "observer_total_s": 8,
+  "observations": {
+    "plain": {
+      "samples": 182,
+      "hz_wall": 30.3018393692,
+      "hz_sim": 30.303030303,
+      "nonzero_frames": 182,
+      "color_fraction_mean": 0.25015625,
+      "color_fraction_min": 0.25015625,
+      "ray_count": 0,
+      "finite_last": 0,
+      "invalid_wall_returns": 0,
+      "max_wall_error_m": 0,
+      "first_scan": []
+    },
+    "noise": {
+      "samples": 182,
+      "hz_wall": 30.3003072119,
+      "hz_sim": 30.303030303,
+      "nonzero_frames": 182,
+      "color_fraction_mean": 0.250156321543,
+      "color_fraction_min": 0.25015625,
+      "ray_count": 0,
+      "finite_last": 0,
+      "invalid_wall_returns": 0,
+      "max_wall_error_m": 0,
+      "first_scan": []
+    }
+  },
+  "loaded_libraries": [
+    "/tmp/gazebo-review/variants/stock/libgz-rendering-ogre.so",
+    "/usr/lib/aarch64-linux-gnu/libGLX_mesa.so.0.0.0",
+    "/usr/lib/aarch64-linux-gnu/libgallium-25.2.8-0ubuntu0.24.04.4.so"
+  ],
+  "server_exit": 0
+}

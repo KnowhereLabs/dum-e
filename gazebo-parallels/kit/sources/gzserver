@@ -1,0 +1,5 @@
+#!/usr/bin/env ruby
+# GAZEBO_VIRGL_DEFAULTS_ENTRY_V1: native ROS Gazebo server default.
+require '/usr/local/lib/gazebo-virgl-defaults/profile'
+GazeboVirglDefaults.apply_environment! if GazeboVirglDefaults.enabled?
+exec '/opt/ros/jazzy/lib/ros_gz_sim/gzserver.vendor', *ARGV

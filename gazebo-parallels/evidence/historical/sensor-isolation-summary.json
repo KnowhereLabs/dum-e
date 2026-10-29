@@ -1,0 +1,208 @@
+{
+  "camera-only-images": [
+    {
+      "count": 230400,
+      "min": 0,
+      "max": 255,
+      "unique": 237,
+      "total_rays": 0
+    },
+    {
+      "count": 230400,
+      "min": 0,
+      "max": 255,
+      "unique": 237,
+      "total_rays": 0
+    }
+  ],
+  "camera-noise-images": [
+    {
+      "count": 230400,
+      "min": 0,
+      "max": 0,
+      "unique": 1,
+      "total_rays": 0
+    },
+    {
+      "count": 230400,
+      "min": 0,
+      "max": 0,
+      "unique": 1,
+      "total_rays": 0
+    }
+  ],
+  "lidar-only-scans": [
+    {
+      "count": 10240,
+      "min": 0.08,
+      "max": 0.08,
+      "unique": 1,
+      "total_rays": 10240
+    },
+    {
+      "count": 10240,
+      "min": 0.08,
+      "max": 0.08,
+      "unique": 1,
+      "total_rays": 10240
+    }
+  ],
+  "explicit-noise": [
+    {
+      "count": 230400,
+      "min": 0,
+      "max": 0,
+      "unique": 1,
+      "total_rays": 0
+    },
+    {
+      "count": 230400,
+      "min": 0,
+      "max": 0,
+      "unique": 1,
+      "total_rays": 0
+    }
+  ],
+  "explicit-lidar": [
+    {
+      "count": 10240,
+      "min": 0.08,
+      "max": 0.08,
+      "unique": 1,
+      "total_rays": 10240
+    },
+    {
+      "count": 10240,
+      "min": 0.08,
+      "max": 0.08,
+      "unique": 1,
+      "total_rays": 10240
+    }
+  ],
+  "gl33-noise": [
+    {
+      "count": 230400,
+      "min": 0,
+      "max": 0,
+      "unique": 1,
+      "total_rays": 0
+    }
+  ],
+  "gl33-lidar": [
+    {
+      "count": 10240,
+      "min": 0.08,
+      "max": 0.08,
+      "unique": 1,
+      "total_rays": 10240
+    }
+  ],
+  "sw-noise": [
+    {
+      "count": 230400,
+      "min": 0,
+      "max": 255,
+      "unique": 255,
+      "total_rays": 0
+    }
+  ],
+  "sw-lidar": [
+    {
+      "count": 7431,
+      "min": 1,
+      "max": 9.998231887817383,
+      "unique": 6920,
+      "total_rays": 10240
+    }
+  ],
+  "sync-noise": [
+    {
+      "count": 230400,
+      "min": 0,
+      "max": 0,
+      "unique": 1,
+      "total_rays": 0
+    }
+  ],
+  "sync-lidar": [
+    {
+      "count": 10240,
+      "min": 0.08,
+      "max": 0.08,
+      "unique": 1,
+      "total_rays": 10240
+    }
+  ],
+  "attr-noise": [
+    {
+      "count": 230400,
+      "min": 0,
+      "max": 0,
+      "unique": 1,
+      "total_rays": 0
+    }
+  ],
+  "attr-lidar": [
+    {
+      "count": 10240,
+      "min": 0.08,
+      "max": 0.08,
+      "unique": 1,
+      "total_rays": 10240
+    }
+  ],
+  "130-noise": [
+    {
+      "count": 230400,
+      "min": 0,
+      "max": 0,
+      "unique": 1,
+      "total_rays": 0
+    }
+  ],
+  "130-lidar": [
+    {
+      "count": 10240,
+      "min": 0.08,
+      "max": 0.08,
+      "unique": 1,
+      "total_rays": 10240
+    }
+  ],
+  "150-noise": [
+    {
+      "count": 230400,
+      "min": 0,
+      "max": 0,
+      "unique": 1,
+      "total_rays": 0
+    }
+  ],
+  "150-lidar": [
+    {
+      "count": 10240,
+      "min": 0.08,
+      "max": 0.08,
+      "unique": 1,
+      "total_rays": 10240
+    }
+  ],
+  "nd-noise": [
+    {
+      "count": 230400,
+      "min": 0,
+      "max": 0,
+      "unique": 1,
+      "total_rays": 0
+    }
+  ],
+  "nd-lidar": [
+    {
+      "count": 10240,
+      "min": 0.08,
+      "max": 0.08,
+      "unique": 1,
+      "total_rays": 10240
+    }
+  ]
+}

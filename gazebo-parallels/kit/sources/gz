@@ -1,0 +1,12 @@
+#!/usr/bin/env ruby
+# GAZEBO_VIRGL_DEFAULTS_ENTRY_V1: system default for this Harmonic VM.
+require 'rbconfig'
+require '/usr/local/lib/gazebo-virgl-defaults/profile'
+original = '/opt/ros/jazzy/opt/gz_tools_vendor/bin/gz.vendor'
+arguments = ARGV.dup
+information = arguments.any? { |arg| %w[-h --help --version --versions].include?(arg) }
+if GazeboVirglDefaults.enabled? && arguments.first == 'sim' && !information
+  GazeboVirglDefaults.apply_environment!
+  arguments = ['sim'] + GazeboVirglDefaults.sim_arguments(arguments.drop(1))
+end
+exec RbConfig.ruby, original, *arguments

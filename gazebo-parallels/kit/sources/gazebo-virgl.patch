@@ -1,0 +1,189 @@
+--- a/ogre/src/OgreGpuRays.cc
++++ b/ogre/src/OgreGpuRays.cc
+@@ -88,7 +88,7 @@
+   public: unsigned int textureCount = 0u;
+ 
+   /// \brief A list of camera angles for first pass rendering.
+-  public: double cameraYaws[4];
++  public: double cameraYaws[3];
+ 
+   /// \brief Image width of first pass.
+   public: unsigned int w1st = 0u;
+@@ -396,7 +396,8 @@
+   else
+   {
+     // In case of 1 vert. ray, set a very small vertical FOV for camera
+-    this->SetRayCountRatio(horzRangeCountPerCamera);
++    this->SetRayCountRatio(horzRangeCountPerCamera /
++        (vertRangeCountPerCamera == 1u ? 3.0 : 1.0));
+     double camVFOV = 2.0 * atan(tan(
+           this->HFOV().Radian() / 2.0) / this->RayCountRatio());
+     this->SetCosVertFOV(camVFOV);
+@@ -428,16 +429,13 @@
+   if (this->dataPtr->textureCount == 2)
+   {
+     this->dataPtr->cameraYaws[0] = -this->HFOV().Radian() / 2.0;
+-    this->dataPtr->cameraYaws[1] = +this->HFOV().Radian();
+-    this->dataPtr->cameraYaws[2] = 0;
+-    this->dataPtr->cameraYaws[3] = -this->HFOV().Radian() / 2.0;
++    this->dataPtr->cameraYaws[1] = +this->HFOV().Radian() / 2.0;
+   }
+   else
+   {
+     this->dataPtr->cameraYaws[0] = -this->HFOV().Radian();
+-    this->dataPtr->cameraYaws[1] = +this->HFOV().Radian();
++    this->dataPtr->cameraYaws[1] = 0;
+     this->dataPtr->cameraYaws[2] = +this->HFOV().Radian();
+-    this->dataPtr->cameraYaws[3] = -this->HFOV().Radian();
+   }
+ 
+   // Configure first pass textures that are not yet configured properly
+@@ -625,12 +623,17 @@
+   sceneMgr->_suppressRenderStateChanges(true);
+   sceneMgr->addRenderObjectListener(this);
+ 
++  Ogre::Quaternion initialOrientation;
++  if (this->dataPtr->textureCount > 1)
++    initialOrientation = this->Node()->getOrientation();
++
+   for (unsigned int i = 0; i < this->dataPtr->textureCount; ++i)
+   {
+     if (this->dataPtr->textureCount > 1)
+     {
+       // Cannot call Camera::RotateYaw because it rotates in world frame,
+       // but we need rotation in camera local frame
++      this->Node()->setOrientation(initialOrientation);
+       this->Node()->roll(Ogre::Radian(this->dataPtr->cameraYaws[i]));
+     }
+ 
+@@ -644,7 +647,7 @@
+   }
+ 
+   if (this->dataPtr->textureCount > 1)
+-      this->Node()->roll(Ogre::Radian(this->dataPtr->cameraYaws[3]));
++    this->Node()->setOrientation(initialOrientation);
+ 
+   sceneMgr->removeRenderObjectListener(this);
+ 
+@@ -681,18 +684,20 @@
+ 
+   const Ogre::Viewport *secondPassViewport = rt->getViewport(0);
+   unsigned int width = secondPassViewport->getActualWidth();
+-  unsigned int height = secondPassViewport->getActualHeight();
++  // Render-target padding must never change the public sensor dimensions.
++  unsigned int physicalHeight = secondPassViewport->getActualHeight();
++  unsigned int height = this->VerticalRangeCount();
+ 
+   size_t size = Ogre::PixelUtil::getMemorySize(
+     width, height, 1, Ogre::PF_FLOAT32_RGB);
+-  int len = width * height * this->Channels();
++  int len = width * physicalHeight * this->Channels();
+ 
+   if (!this->dataPtr->gpuRaysBuffer)
+   {
+     this->dataPtr->gpuRaysBuffer = new float[len];
+   }
+ 
+-  Ogre::PixelBox dstBox(width, height,
++  Ogre::PixelBox dstBox(width, physicalHeight,
+         1, Ogre::PF_FLOAT32_RGB, this->dataPtr->gpuRaysBuffer);
+ 
+   auto pixelBuffer = this->dataPtr->secondPassTexture->getBuffer();
+@@ -703,7 +708,10 @@
+     this->dataPtr->gpuRaysScan = new float[len];
+   }
+ 
+-  memcpy(this->dataPtr->gpuRaysScan, this->dataPtr->gpuRaysBuffer, size);
++  auto source = this->dataPtr->gpuRaysBuffer;
++  if (height == 1u && physicalHeight > 1u)
++    source += (physicalHeight / 2u) * width * this->Channels();
++  memcpy(this->dataPtr->gpuRaysScan, source, size);
+ 
+   this->dataPtr->newGpuRaysFrame(this->dataPtr->gpuRaysScan,
+       width, height, this->Channels(), "PF_FLOAT32_RGB");
+@@ -721,7 +729,7 @@
+   auto rt = this->dataPtr->secondPassTexture->getBuffer()->getRenderTarget();
+   const Ogre::Viewport *secondPassViewport = rt->getViewport(0);
+   unsigned int width = secondPassViewport->getActualWidth();
+-  unsigned int height = secondPassViewport->getActualHeight();
++  unsigned int height = this->VerticalRangeCount();
+ 
+   size_t size = Ogre::PixelUtil::getMemorySize(
+     width, height, 1, Ogre::PF_FLOAT32_RGB);
+@@ -798,7 +806,9 @@
+     const unsigned int _w, const unsigned int _h)
+ {
+   this->dataPtr->w1st = _w;
+-  this->dataPtr->h1st = _h;
++  // VirGL on Parallels fails with single-row render targets. Three rows
++  // retain a center pixel at the original horizontal scanning plane.
++  this->dataPtr->h1st = (_h == 1u ? 3u : _h);
+ }
+ 
+ /////////////////////////////////////////////////
+@@ -806,7 +816,7 @@
+     const unsigned int _w, const unsigned int _h)
+ {
+   this->dataPtr->w2nd = _w;
+-  this->dataPtr->h2nd = _h;
++  this->dataPtr->h2nd = (_h == 1u ? 3u : _h);
+ }
+ 
+ /////////////////////////////////////////////////
+@@ -833,18 +843,18 @@
+ 
+   dx = 0.1;
+ 
+-  // startX ranges from 0 to -(w2nd/10) at dx=0.1 increments
+-  // startY ranges from h2nd/10 to 0 at dy=0.1 decrements
++  // startX ranges from -0.05 to -(w2nd/10 - 0.05) at dx=0.1 increments
++  // startY ranges from h2nd/10 - 0.05 to 0.05 at dy=0.1 decrements
+   // see OgreGpuRays::Set2ndPassTarget() on how the ortho cam is set up
+-  double startX = dx;
+-  double startY = this->dataPtr->h2nd/10.0;
++  double startX = dx / 2.0;
++  double startY = (this->dataPtr->h2nd - 0.5) / 10.0;
+ 
+   // half of actual camera vertical FOV without padding
+   double phi = this->VFOV().Radian() / 2.0;
+   double phiCamera = phi + std::abs(this->VertHalfAngle());
+   double theta = this->CosHorzFOV() / 2.0;
+ 
+-  if (this->dataPtr->h2nd == 1)
++  if (this->VerticalRangeCount() == 1)
+   {
+     phi = 0;
+   }
+@@ -891,7 +901,7 @@
+       if (ptsOnLine == this->dataPtr->w2nd)
+       {
+         ptsOnLine = 0;
+-        startX = 0;
++        startX = -dx / 2.0;
+         startY -= dy;
+       }
+       ptsOnLine++;
+@@ -909,7 +919,11 @@
+       // adjust uv coordinates of depth texture to match projection of current
+       // gpu ray the depth image plane.
+       double u = 0.5 - tan(delta) / (2.0 * tan(theta));
+-      double v = 0.5 - (tan(gamma) * cos(theta)) /
++      // A horizontal 2D scan samples the center row. Avoid the 0/0 from
++      // a zero vertical field of view in the general 3D expression.
++      double v = 0.5;
++      if (this->VerticalRangeCount() > 1u)
++        v -= (tan(gamma) * cos(theta)) /
+           (2.0 * tan(phiCamera) * cos(delta));
+ 
+       submesh->AddTexCoord(u, v);
+--- a/ogre/src/OgreLight.cc
++++ b/ogre/src/OgreLight.cc
+@@ -139,7 +139,7 @@
+ //////////////////////////////////////////////////
+ void OgreLight::SetCastShadows(bool _castShadows)
+ {
+-  this->ogreLight->setCastShadows(_castShadows);
++  this->ogreLight->setCastShadows(false);
+ }
+ 
+ //////////////////////////////////////////////////

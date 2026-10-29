@@ -1,0 +1,28 @@
+From 856872b3c1164ab7019d2e4f553847f73e0db89d Mon Sep 17 00:00:00 2001
+From: "Addisu Z. Taddese" <addisu@openrobotics.org>
+Date: Tue, 19 Mar 2024 00:53:58 -0500
+Subject: [PATCH] Add OgreNext vendor package
+
+This is done so that the `PKG_CONFIG_PATH` environment variable
+is set before `gz_find_pkg(OGRE2)` runs.
+
+Signed-off-by: Addisu Z. Taddese <addisu@openrobotics.org>
+---
+ CMakeLists.txt | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 6f7c114..f94f7e1 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -109,6 +109,7 @@ if (OGRE_FOUND)
+   set(GZ_RENDERING_HAVE_OGRE TRUE)
+ endif()
+ 
++find_package(gz_ogre_next_vendor REQUIRED)
+ #--------------------------------------
+ # Find OGRE2: first try to find OGRE2 built with PlanarReflections support and
+ # fallback to look for OGRE2 without it. Both seems to works for gz-rendering.
+-- 
+2.34.1
+

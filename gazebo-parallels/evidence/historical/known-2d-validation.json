@@ -1,0 +1,7 @@
+{
+  "rays": 361,
+  "tested_rays": 131,
+  "front_expected_m": 2,
+  "front_actual_m": 2.0000011920928955,
+  "max_absolute_error_m": 0.0014691352844264927
+}

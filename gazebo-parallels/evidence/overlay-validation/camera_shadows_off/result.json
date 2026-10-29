@@ -1,0 +1,50 @@
+{
+  "world": "camera_shadows_off",
+  "command": [
+    "ruby",
+    "/opt/ros/jazzy/opt/gz_tools_vendor/bin/gz.vendor",
+    "sim",
+    "-r",
+    "-s",
+    "/tmp/gazebo-review/public-kit/bench/worlds/camera_shadows_off.sdf",
+    "--render-engine",
+    "/tmp/gazebo-review/public-kit/overlay/install/gz_rendering_vendor/opt/gz_rendering_vendor/lib/gz-rendering-8/engine-plugins/libgz-rendering-ogre.so"
+  ],
+  "engine_sha256": "c32b4126db86780af178af05b66e48ec123768b29411c07b2715e751866cc15a",
+  "sdf_sha256": "bf6299d0819cb672b0e6d135d839c5f0b852279f01fb5c64718266b79932b018",
+  "observations": {
+    "plain": {
+      "samples": 182,
+      "hz_wall": 30.3023487868,
+      "hz_sim": 30.303030303,
+      "nonzero_frames": 182,
+      "color_fraction_mean": 0.2515234375,
+      "color_fraction_min": 0.2515234375,
+      "ray_count": 0,
+      "finite_last": 0,
+      "invalid_wall_returns": 0,
+      "max_wall_error_m": 0,
+      "first_scan": []
+    },
+    "noise": {
+      "samples": 182,
+      "hz_wall": 30.3007633108,
+      "hz_sim": 30.303030303,
+      "nonzero_frames": 182,
+      "color_fraction_mean": 0.2515234375,
+      "color_fraction_min": 0.2515234375,
+      "ray_count": 0,
+      "finite_last": 0,
+      "invalid_wall_returns": 0,
+      "max_wall_error_m": 0,
+      "first_scan": []
+    }
+  },
+  "loaded_libraries": [
+    "/tmp/gazebo-review/public-kit/overlay/install/gz_rendering_vendor/opt/gz_rendering_vendor/lib/gz-rendering-8/engine-plugins/libgz-rendering8-ogre.so.8.2.3",
+    "/tmp/gazebo-review/public-kit/overlay/install/gz_rendering_vendor/opt/gz_rendering_vendor/lib/libgz-rendering8.so.8.2.3",
+    "/usr/local/lib/gazebo-virgl-defaults/runtime-v2/mesa/dri/virtio_gpu_dri.so",
+    "/usr/local/lib/gazebo-virgl-defaults/runtime-v2/mesa/libGLX_mesa.so.0.0.0"
+  ],
+  "server_exit": 0
+}

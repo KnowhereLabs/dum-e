@@ -1,0 +1,7 @@
+{
+  "five_second_samples": 85,
+  "minimum_updates_per_second": 55.36,
+  "median_updates_per_second": 59.95,
+  "maximum_updates_per_second": 59.97,
+  "note": "Camera updates in the Gazebo GUI, not an independent measurement of frames presented by the display. Test viewport 581x797."
+}

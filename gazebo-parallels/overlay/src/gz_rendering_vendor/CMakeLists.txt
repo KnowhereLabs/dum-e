@@ -1,0 +1,134 @@
+# Based on upstream vendor 0.0.7; local source-selection and forced-build hook changes.
+cmake_minimum_required(VERSION 3.10)
+project(gz_rendering_vendor)
+
+# Project-specific settings
+set(LIB_VER_MAJOR 8)
+set(LIB_VER_MINOR 2)
+set(LIB_VER_PATCH 3)
+set(LIB_VER_SUFFIX "")
+
+# Derived variables
+set(LIB_NAME gz-rendering)
+set(GITHUB_NAME gz-rendering)
+string(REPLACE "-" "_" LIB_NAME_UNDERSCORE ${LIB_NAME})
+set(LIB_NAME_COMP_PREFIX ${LIB_NAME})
+set(LIB_NAME_FULL gz-rendering8)
+set(LIB_VER ${LIB_VER_MAJOR}.${LIB_VER_MINOR}.${LIB_VER_PATCH})
+
+option(VENDOR_FROM_LIB_VCS_REF
+  "Vendor from a VCS ref instead of tag. Uses the value in LIB_VCS_REF if specified or main otherwise"
+  OFF)
+if(NOT VENDOR_FROM_LIB_VCS_REF)
+  set(LIB_VCS_VER ${GITHUB_NAME}${LIB_VER_MAJOR}_${LIB_VER}${LIB_VER_SUFFIX})
+elseif(LIB_VCS_REF)
+  set(LIB_VCS_VER ${LIB_VCS_REF})
+else()
+  set(LIB_VCS_VER main)
+endif()
+
+find_package(ament_cmake_core REQUIRED)
+find_package(ament_cmake_vendor_package REQUIRED)
+find_package(ament_cmake_export_dependencies REQUIRED)
+
+find_package(gz_cmake_vendor REQUIRED)
+find_package(gz_common_vendor REQUIRED)
+find_package(gz_math_vendor REQUIRED)
+find_package(gz_plugin_vendor REQUIRED)
+find_package(gz_utils_vendor REQUIRED)
+find_package(gz_ogre_next_vendor REQUIRED)
+
+# Set the VERSION_MATCH to "EXACT" by default, but relax the requirement
+# if we are users are building from source (determined by the
+# GZ_BUILD_FROM_SOURCE environment variable) or if explicitly told to do so
+# by the GZ_RELAX_VERSION_MATCH environment variable.
+set(VERSION_MATCH "EXACT")
+if(NOT $ENV{GZ_BUILD_FROM_SOURCE} STREQUAL "")
+  set(VERSION_MATCH "")
+endif()
+
+if(NOT $ENV{GZ_RELAX_VERSION_MATCH} STREQUAL "")
+  set(VERSION_MATCH "")
+endif()
+
+find_package(${LIB_NAME_FULL} ${VERSION_MATCH} ${LIB_VER} COMPONENTS all QUIET)
+
+set(REVIEW_RENDERING_SOURCE "" CACHE PATH "Prepared gz-rendering 8.2.3 source tree")
+if(NOT EXISTS "${REVIEW_RENDERING_SOURCE}/CMakeLists.txt")
+  message(FATAL_ERROR "Run tools/prepare_sources.py first and pass REVIEW_RENDERING_SOURCE")
+endif()
+
+ament_vendor(${LIB_NAME_UNDERSCORE}_vendor
+  SATISFIED ${${LIB_NAME_FULL}_FOUND}
+  VCS_TYPE path
+  VCS_URL ${REVIEW_RENDERING_SOURCE}
+  CMAKE_ARGS
+    -DBUILD_DOCS:BOOL=OFF
+    -DCMAKE_BUILD_TYPE:STRING=Release
+  GLOBAL_HOOK
+)
+
+find_package(ament_cmake_test REQUIRED)
+if(BUILD_TESTING)
+  find_package(ament_cmake_lint_cmake REQUIRED)
+  find_package(ament_cmake_copyright REQUIRED)
+  find_package(ament_cmake_xmllint REQUIRED)
+
+  ament_lint_cmake()
+  ament_copyright()
+  ament_xmllint()
+endif()
+
+ament_export_dependencies(
+  gz_cmake_vendor
+  gz_common_vendor
+  gz_math_vendor
+  gz_plugin_vendor
+  gz_utils_vendor
+  gz_ogre_next_vendor
+)
+
+if(NOT ${${LIB_NAME_FULL}_FOUND} OR FORCE_BUILD_VENDOR_PKG)
+  ament_environment_hooks("${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}.dsv.in")
+  # Create a dummy .sh file needed for ament_package to source the .dsv file.
+  # See https://github.com/ament/ament_package/issues/145
+  file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.sh "# Dummy .sh file needed for .dsv file to be sourced.")
+  ament_environment_hooks("${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.sh")
+endif()
+
+# The goal is to support versionless package names once the user has found the
+# vendor package. Example usage:
+#
+#   find_package(gz_sim_vendor)
+#   find_package(gz-sim VERSION 8.2.0) # Note gz-sim not gz-sim8
+#
+# To accomplish this, we create a `{LIB_NAME}-config.cmake` file that does
+# find_package on the underlying package and sets up CMake targets with the
+# same name as the original targets sans the version number in the target.
+#
+# However, since the vendor package is built with `GLOBAL_HOOK`, we can't
+# install the `-config.cmake` file we're creating here to where the versioned
+# `-config.cmake` from the underlying package is located. If we did, users can
+# `find_package` the versionless package without first finding the vendor
+# package. Thus, we install the `-config.cmake` file to a nonstandard
+# location: `opt/${PROJECT_NAME}/extra_cmake/` and provide a
+# `{vendor_name}-extras.cmake` file that adds that path to `CMAKE_PREFIX_PATH`.
+ament_package(
+  CONFIG_EXTRAS_POST "gz_rendering_vendor-extras.cmake.in"
+)
+
+include(CMakePackageConfigHelpers)
+include(GNUInstallDirs)
+
+configure_package_config_file(${LIB_NAME}-config.cmake.in
+  ${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}-config.cmake
+  INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${LIB_NAME})
+
+write_basic_package_version_file(
+  ${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}-config-version.cmake
+  VERSION ${LIB_VER}
+  COMPATIBILITY SameMajorVersion)
+
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}-config.cmake
+              ${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}-config-version.cmake
+        DESTINATION "opt/${PROJECT_NAME}/extra_cmake/lib/cmake/${LIB_NAME}")
