@@ -10,7 +10,7 @@ the decision that came out of it.
 
 | Directory | What it is | State |
 |---|---|---|
-| [gazebo-parallels](gazebo-parallels/INSTALL.md) | Gazebo Harmonic with hardware-accelerated OGRE 1, LiDAR and camera on a Parallels VM (Ubuntu 24.04 ARM64, ROS 2 Jazzy, Apple silicon). Build kit, colcon overlay, 53-trial ablation. | Reproduced on one machine. Clean-VM run pending. Upstream: gazebosim/gz-rendering#1400 |
+| [gazebo-parallels](gazebo-parallels/INSTALL.md) | Hardware-accelerated Gazebo Harmonic for ROS 2 Jazzy on Parallels (Apple silicon): about 60 GUI updates/s on the virtual GPU, with working LiDAR and RGB camera. Build kit, colcon overlay, 53-trial ablation. | Reproduced on one machine. Clean-VM run pending. Upstream: gazebosim/gz-rendering#1400 |
 
 ## Conventions
 

@@ -1,11 +1,11 @@
-# Gazebo Harmonic on Parallels (Apple silicon): hardware-accelerated OGRE 1 profile
+# Hardware-accelerated Gazebo Harmonic for ROS 2 Jazzy on Parallels (Apple silicon)
 
 Ubuntu 24.04 ARM64, ROS 2 Jazzy, Gazebo Sim 8.15, gz-rendering 8.2.3, Parallels Desktop 27.
 
 Out of the box, `gz sim` on a Parallels VM either crashes (OGRE 2 shaders fail
 on the VirGL driver) or runs in software at 6 fps. This kit makes the stock
-`gz sim` and `ros2 launch` commands run on the virtual GPU with OGRE 1,
-with working LiDAR and RGB camera sensors.
+`gz sim` and `ros2 launch` commands run on the virtual GPU, at about 60 GUI
+updates per second, with working LiDAR and RGB camera sensors.
 
 ## Status
 
