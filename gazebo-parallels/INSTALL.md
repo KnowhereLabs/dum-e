@@ -123,7 +123,7 @@ Clone this repository inside the VM (or copy the `gazebo-parallels/kit`
 directory in through a shared folder), then:
 
 ```bash
-git clone https://github.com/KnowhereLabs/dum-e.git "$HOME/dum-e"
+git clone https://github.com/alepistella/dum-e.git "$HOME/dum-e"
 mkdir -p "$HOME/gazebo-parallels"
 cp -R "$HOME/dum-e/gazebo-parallels/kit" "$HOME/gazebo-parallels/kit"
 cd "$HOME/gazebo-parallels/kit"
